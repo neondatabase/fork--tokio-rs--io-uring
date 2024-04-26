@@ -31,6 +31,13 @@ pub struct SubmissionQueue<'a, E: EntryMarker = Entry> {
 /// SAFETY: there isn't anything thread-local about the submission queue;
 /// (We do not attempt to model `IORING_SETUP_SINGLE_ISSUER` in the type system.)
 unsafe impl<'a, E: EntryMarker> Send for SubmissionQueue<'a, E> {}
+/// SAFETY: mutating methods take `&mut self`, thereby eliminating data races between
+/// different userspace borrowers at compile time via standard borrowing rules.
+/// (There are `unsafe` methods like `borrow_shared()` that allow violating this.)
+///
+/// The various pointers to atomics are pointers to shared state between
+/// userspace and kernel, and orthogonal to this unsafe impl.
+unsafe impl<'a, E: EntryMarker> Sync for SubmissionQueue<'a, E> {}
 
 /// A submission queue entry (SQE), representing a request for an I/O operation.
 ///

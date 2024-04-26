@@ -6,8 +6,13 @@ pub fn test_sendness<S: squeue::EntryMarker, C: cqueue::EntryMarker>(
     ring: &mut IoUring<S, C>,
     _test: &Test,
 ) -> anyhow::Result<()> {
+    fn assert_send<T: Send>(t: T) -> T {
+        t
+    }
+
+    let ring = assert_send(ring);
+
     let (submitter, sq, cq) = ring.split();
-    fn assert_send<T: Send>(_t: T) {}
     assert_send(submitter);
     assert_send(sq);
     assert_send(cq);
