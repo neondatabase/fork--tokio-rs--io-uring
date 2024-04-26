@@ -23,6 +23,7 @@ pub(crate) struct Inner<E: EntryMarker> {
 }
 
 /// SAFETY: there isn't anything thread-local about the completion queue;
+unsafe impl<E: EntryMarker> Sync for Inner<E> {}
 unsafe impl<E: EntryMarker> Send for Inner<E> {}
 
 /// An io_uring instance's completion queue. This stores all the I/O operations that have completed.

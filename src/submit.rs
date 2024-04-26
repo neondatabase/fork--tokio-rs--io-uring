@@ -32,6 +32,7 @@ pub struct Submitter<'a> {
 /// into a compile-time error. But at this time, giving users flexibility is more important to us.
 /// TODO: use typestate pattern to track whether IORING_SETUP_SINGLE_ISSUER is set, and make this
 /// unsafe impl conditional on it not being set.
+unsafe impl<'a> Sync for Submitter<'a> {}
 unsafe impl<'a> Send for Submitter<'a> {}
 
 impl<'a> Submitter<'a> {

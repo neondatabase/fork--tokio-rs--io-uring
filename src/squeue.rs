@@ -24,6 +24,7 @@ pub(crate) struct Inner<E: EntryMarker> {
 /// SAFETY: there isn't anything thread-local about the submission queue;
 /// There is IORING_SETUP_SINGLE_ISSUER, but that only poses limitations on
 /// where the [`super::submit::Submitter`] may be used, not the [`SubmissionQueue`].
+unsafe impl<E: EntryMarker> Sync for Inner<E> {}
 unsafe impl<E: EntryMarker> Send for Inner<E> {}
 
 /// An io_uring instance's submission queue. This is used to send I/O requests to the kernel.
