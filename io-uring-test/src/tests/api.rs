@@ -4,7 +4,7 @@ use io_uring::{cqueue, squeue};
 
 pub fn test_sendness<S: squeue::EntryMarker, C: cqueue::EntryMarker>(
     ring: &mut IoUring<S, C>,
-    test: &Test,
+    _test: &Test,
 ) -> anyhow::Result<()> {
     let (submitter, sq, cq) = ring.split();
     fn assert_send<T: Send>(_t: T) {}

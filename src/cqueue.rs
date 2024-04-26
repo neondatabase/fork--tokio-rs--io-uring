@@ -22,16 +22,19 @@ pub(crate) struct Inner<E: EntryMarker> {
     flags: *const atomic::AtomicU32,
 }
 
-/// SAFETY: there isn't anything thread-local about the completion queue;
-unsafe impl<E: EntryMarker> Sync for Inner<E> {}
-unsafe impl<E: EntryMarker> Send for Inner<E> {}
-
 /// An io_uring instance's completion queue. This stores all the I/O operations that have completed.
 pub struct CompletionQueue<'a, E: EntryMarker = Entry> {
     head: u32,
     tail: u32,
     queue: &'a Inner<E>,
 }
+
+/// SAFETY: there isn't anything thread-local about the completion queue memory;
+unsafe impl<'a, E: EntryMarker> Send for CompletionQueue<'a, E> {}
+/// SAFETY: the methods that mutate state are all `&mut self`, thereby eliminating
+/// data races at compile time via the standard borrowing rules.
+/// (There are `unsafe` methods like `borrow_shared()` that allow violating this.)
+unsafe impl<'a, E: EntryMarker> Sync for CompletionQueue<'a, E> {}
 
 /// A completion queue entry (CQE), representing a complete I/O operation.
 ///

@@ -27,13 +27,15 @@ pub struct Submitter<'a> {
 }
 
 /// SAFETY: there isn't anyhting thread-local about submission that would make Send memory unsafe.
-///
-/// There is IORING_SETUP_SINGLE_ISSUER, where !Send helps us turn what would be a runtime error
-/// into a compile-time error. But at this time, giving users flexibility is more important to us.
-/// TODO: use typestate pattern to track whether IORING_SETUP_SINGLE_ISSUER is set, and make this
-/// unsafe impl conditional on it not being set.
-unsafe impl<'a> Sync for Submitter<'a> {}
+/// (We do not attempt to model `IORING_SETUP_SINGLE_ISSUER` in the type system.)
 unsafe impl<'a> Send for Submitter<'a> {}
+/// SAFETY: [`Submitter`] itself does not mutate anything, so it's memory-safe to mark it Sync.
+/// It is questionable  `io_uring_enter` concurrently against the same io_uring instance,
+///
+/// threads is safe to do.
+/// calls
+/// have defined semantics
+unsafe impl<'a> Sync for Submitter<'a> {}
 
 impl<'a> Submitter<'a> {
     #[inline]

@@ -21,18 +21,21 @@ pub(crate) struct Inner<E: EntryMarker> {
     pub(crate) sqes: *mut E,
 }
 
-/// SAFETY: there isn't anything thread-local about the submission queue;
-/// There is IORING_SETUP_SINGLE_ISSUER, but that only poses limitations on
-/// where the [`super::submit::Submitter`] may be used, not the [`SubmissionQueue`].
-unsafe impl<E: EntryMarker> Sync for Inner<E> {}
-unsafe impl<E: EntryMarker> Send for Inner<E> {}
-
 /// An io_uring instance's submission queue. This is used to send I/O requests to the kernel.
 pub struct SubmissionQueue<'a, E: EntryMarker = Entry> {
     head: u32,
     tail: u32,
     queue: &'a Inner<E>,
 }
+
+/// SAFETY: there isn't anything thread-local about the submission queue;
+/// There is `IORING_SETUP_SINGLE_ISSUER`, but that only poses limitations on
+/// where the [`super::submit::Submitter`] may be used, not the [`SubmissionQueue`].
+unsafe impl<'a, E: EntryMarker> Send for SubmissionQueue<'a, E> {}
+/// SAFETY: the methods that mutate state are all `&mut self`, thereby eliminating
+/// data races at compile time via the standard borrowing rules.
+/// (There are `unsafe` methods like `borrow_shared()` that allow violating this.)
+unsafe impl<'a, E: EntryMarker> Sync for SubmissionQueue<'a, E> {}
 
 /// A submission queue entry (SQE), representing a request for an I/O operation.
 ///

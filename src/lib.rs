@@ -69,7 +69,17 @@ where
 #[derive(Clone)]
 pub struct Parameters(sys::io_uring_params);
 
+/// SAFETY: there isn't anything thread-local about an io_uring instance.
+/// (We do not attempt to model `IORING_SETUP_SINGLE_ISSUER` in the type system.)
 unsafe impl<S: squeue::EntryMarker, C: cqueue::EntryMarker> Send for IoUring<S, C> {}
+/// SAFETY: the methods that allow mutating the userspace-owned ranges of memory in the ring
+/// mutate state are all `&mut self`, thereby eliminating
+/// data races at compile time via the standard borrowing rules.
+/// (There are `unsafe` methods like `submission_shared()` that allow violating this.)
+///
+/// Note that we allow for concurrent calls to `submit()`, resulting in weird
+/// brings a bunch of ToC ToU headache.
+///
 unsafe impl<S: squeue::EntryMarker, C: cqueue::EntryMarker> Sync for IoUring<S, C> {}
 
 impl IoUring<squeue::Entry, cqueue::Entry> {
