@@ -29,13 +29,6 @@ pub struct Submitter<'a> {
 /// SAFETY: there isn't anyhting thread-local about submission that would make Send memory unsafe.
 /// (We do not attempt to model `IORING_SETUP_SINGLE_ISSUER` in the type system.)
 unsafe impl<'a> Send for Submitter<'a> {}
-/// SAFETY: [`Submitter`] itself does not mutate anything, so it's memory-safe to mark it Sync.
-/// It is questionable  `io_uring_enter` concurrently against the same io_uring instance,
-///
-/// threads is safe to do.
-/// calls
-/// have defined semantics
-unsafe impl<'a> Sync for Submitter<'a> {}
 
 impl<'a> Submitter<'a> {
     #[inline]
