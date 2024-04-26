@@ -26,6 +26,14 @@ pub struct Submitter<'a> {
     sq_flags: *const atomic::AtomicU32,
 }
 
+/// SAFETY: there isn't anyhting thread-local about submission that would make Send memory unsafe.
+///
+/// There is IORING_SETUP_SINGLE_ISSUER, where !Send helps us turn what would be a runtime error
+/// into a compile-time error. But at this time, giving users flexibility is more important to us.
+/// TODO: use typestate pattern to track whether IORING_SETUP_SINGLE_ISSUER is set, and make this
+/// unsafe impl conditional on it not being set.
+unsafe impl<'a> Send for Submitter<'a> {}
+
 impl<'a> Submitter<'a> {
     #[inline]
     pub(crate) const fn new(

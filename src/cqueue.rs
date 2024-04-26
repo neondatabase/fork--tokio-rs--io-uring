@@ -22,6 +22,9 @@ pub(crate) struct Inner<E: EntryMarker> {
     flags: *const atomic::AtomicU32,
 }
 
+/// SAFETY: there isn't anything thread-local about the completion queue;
+unsafe impl<E: EntryMarker> Send for Inner<E> {}
+
 /// An io_uring instance's completion queue. This stores all the I/O operations that have completed.
 pub struct CompletionQueue<'a, E: EntryMarker = Entry> {
     head: u32,
@@ -32,7 +35,7 @@ pub struct CompletionQueue<'a, E: EntryMarker = Entry> {
 /// A completion queue entry (CQE), representing a complete I/O operation.
 ///
 /// This is implemented for [`Entry`] and [`Entry32`].
-pub trait EntryMarker: Clone + Debug + Into<Entry> + private::Sealed {
+pub trait EntryMarker: Send + Clone + Debug + Into<Entry> + private::Sealed {
     const BUILD_FLAGS: u32;
 }
 

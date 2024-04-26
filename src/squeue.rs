@@ -21,6 +21,11 @@ pub(crate) struct Inner<E: EntryMarker> {
     pub(crate) sqes: *mut E,
 }
 
+/// SAFETY: there isn't anything thread-local about the submission queue;
+/// There is IORING_SETUP_SINGLE_ISSUER, but that only poses limitations on
+/// where the [`super::submit::Submitter`] may be used, not the [`SubmissionQueue`].
+unsafe impl<E: EntryMarker> Send for Inner<E> {}
+
 /// An io_uring instance's submission queue. This is used to send I/O requests to the kernel.
 pub struct SubmissionQueue<'a, E: EntryMarker = Entry> {
     head: u32,
@@ -31,7 +36,7 @@ pub struct SubmissionQueue<'a, E: EntryMarker = Entry> {
 /// A submission queue entry (SQE), representing a request for an I/O operation.
 ///
 /// This is implemented for [`Entry`] and [`Entry128`].
-pub trait EntryMarker: Clone + Debug + From<Entry> + private::Sealed {
+pub trait EntryMarker: Send + Clone + Debug + From<Entry> + private::Sealed {
     const BUILD_FLAGS: u32;
 }
 
